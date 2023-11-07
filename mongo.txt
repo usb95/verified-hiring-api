@@ -1,0 +1,6 @@
+pass : IxV6sgtwC2tuP4ZN
+
+username : badgujarpriti5
+
+
+example Port : DB_URI=mongodb+srv://badgujarpriti5:pOJNMGT2SS4YJP8F@mycluster.xfqcxrm.mongodb.net/
