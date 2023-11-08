@@ -12,7 +12,7 @@ require("./db/conn");
 
 
 const Registration = require('./models/Registration');
-const User = require('./models/User'); 
+// const User = require('./models/User'); 
 const conn = require('./db/conn'); 
 
 
