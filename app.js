@@ -1,4 +1,5 @@
-// Import required modules
+
+
 require('dotenv').config();
 const express = require('express');
 const bodyParser = require('body-parser');
@@ -6,28 +7,36 @@ const jwt = require('jsonwebtoken');
 const bcrypt = require('bcrypt');
 const cors = require('cors');
 const mongoose = require('mongoose');
-const Registration = require('./models/Registration'); // You should have a Registration model defined
-const conn = require('./db/conn'); // Make sure the MongoDB connection is correctly established
+require("./db/conn");
 
-// Create an Express application
+
+
+const Registration = require('./models/Registration');
+const User = require('./models/User'); 
+const conn = require('./db/conn'); 
+
+
+
 const app = express();
 const port = process.env.PORT || 5000;
-const secretKey = process.env.SECRET_KEY || 'default-secret-key'; // Use a strong and unique secret key in production
+const secretKey = process.env.SECRET_KEY || 'default-secret-key';
 const backendUrl = process.env.REACT_APP_BACKEND_URL || `http://localhost:${port}`;
 
-// Middleware setup
+
 app.use(bodyParser.json());
+
 app.use(cors({
     origin: "*"
 }));
 
-// Login endpoint
+
+// login endpoint
 app.post('/login', async (req, res) => {
     const { companyEmail, password } = req.body;
 
     try {
-        // Check if the user with the provided companyEmail exists in the Registration model
-        const user = await Registration.findOne({ companyEmail });
+        // Check if the user with the provided companyEmail exists in the User model
+        const user = await Registration.findOne({ companyEmail }, null, { maxTimeMS: 20000 });
         console.log('User from the database:', user);
 
         if (!user || !bcrypt.compareSync(password, user.password)) {
@@ -42,6 +51,11 @@ app.post('/login', async (req, res) => {
         res.status(500).json({ message: 'Internal server error' });
     }
 });
+
+
+
+
+
 
 // Registration endpoint
 app.post('/register', async (req, res) => {
@@ -58,7 +72,7 @@ app.post('/register', async (req, res) => {
     } = req.body;
 
     try {
-        // Check if the user with the provided companyEmail exists in the Registration model
+        // Check if the user with the provided companyEmail exists in the Registration schema
         const existingUser = await Registration.findOne({ companyEmail });
 
         if (existingUser) {
@@ -66,20 +80,21 @@ app.post('/register', async (req, res) => {
         }
 
         // Hash the password before storing it (use bcrypt for secure hashing)
-        const hashedPassword = bcrypt.hashSync(password, 10);
+        // const hashedPassword = await bcrypt.hash(password, 10);
 
-        // Create a new user in the Registration model
+        // Create a new user in the Registration schema
         const newUser = new Registration({
             salutation,
             name,
             companyEmail,
-            password: hashedPassword,
+            password,
             companyName,
             designation,
             personalEmail,
             country,
             mobileNumber,
         });
+   newUser.password = bcrypt.hashSync(password, 10);
         await newUser.save();
 
         res.status(201).json({ message: 'User registered successfully' });
@@ -89,12 +104,17 @@ app.post('/register', async (req, res) => {
     }
 });
 
-// Protected route
+
+
+
+// protected route
 app.get('/protected', verifyToken, (req, res) => {
     res.json({ message: 'You have access to this protected route!', user: req.user });
 });
 
-// Middleware to verify JWT token
+
+
+// middleware to verify JWT token
 function verifyToken(req, res, next) {
     const token = req.headers.authorization;
 
@@ -109,10 +129,12 @@ function verifyToken(req, res, next) {
 
         req.user = user;
         next();
-    }
+    });
 }
 
-// Start the server
+
+// start the server
+
 app.listen(port, () => {
     console.log(`Server is running on port ${port}`);
     console.log(`Backend server URL: ${backendUrl}`);
