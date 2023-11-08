@@ -78,7 +78,7 @@ app.post('/register', async (req, res) => {
         }
 
         // Hash the password before storing it (use bcrypt for secure hashing)
-        const hashedPassword = await bcrypt.hash(password, 10);
+        // const hashedPassword = await bcrypt.hash(password, 10);
 
         // Create a new user in the Registration schema
         const newUser = new Registration({
@@ -92,7 +92,7 @@ app.post('/register', async (req, res) => {
             country,
             mobileNumber,
         });
-
+   newUser.password = bcrypt.hashSync(password, 10);
         await newUser.save();
 
         res.status(201).json({ message: 'User registered successfully' });
