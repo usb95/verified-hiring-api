@@ -36,6 +36,7 @@ app.post('/login', async (req, res) => {
     try {
         // Check if the user with the provided companyEmail exists in the User model
         const user = await Registration.findOne({ companyEmail }, null, { maxTimeMS: 20000 });
+        console.log('User from the database:', user);
 
         if (!user || !bcrypt.compareSync(password, user.password)) {
             return res.status(401).json({ message: 'Invalid credentials' });
