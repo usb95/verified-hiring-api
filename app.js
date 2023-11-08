@@ -85,7 +85,7 @@ app.post('/register', async (req, res) => {
             salutation,
             name,
             companyEmail,
-            password: hashedPassword,
+            password,
             companyName,
             designation,
             personalEmail,
