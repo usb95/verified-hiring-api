@@ -35,11 +35,16 @@ app.post('/login', async (req, res) => {
     const { companyEmail, password } = req.body;
 
     try {
-        // Check if the user with the provided companyEmail exists in the User model
-        const user = await Registration.findOne({ companyEmail }, null, { maxTimeMS: 20000 });
-        console.log('User from the database:', user);
+        // Check if the user with the provided companyEmail exists in the Registration model
+        const user = await Registration.findOne({ companyEmail });
 
-        if (!user || !bcrypt.compareSync(password, user.password)) {
+        if (!user) {
+            return res.status(401).json({ message: 'Invalid credentials' });
+        }
+
+        const passwordMatch = await bcrypt.compare(password, user.password);
+
+        if (!passwordMatch) {
             return res.status(401).json({ message: 'Invalid credentials' });
         }
 
@@ -51,7 +56,6 @@ app.post('/login', async (req, res) => {
         res.status(500).json({ message: 'Internal server error' });
     }
 });
-
 
 
 
