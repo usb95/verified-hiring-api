@@ -29,41 +29,27 @@ app.use(cors({
 }));
 
 
+// login endpoint
 app.post('/login', async (req, res) => {
     const { companyEmail, password } = req.body;
 
     try {
-        // Check if the user with the provided companyEmail exists in the Registration schema
-        const user = await Registration.findOne({ companyEmail });
+        // Check if the user with the provided companyEmail exists in the User model
+        const user = await Registration.findOne({ companyEmail }, null, { maxTimeMS: 20000 });
 
-        if (!user) {
-            return res.status(401).json({ message: 'User not found' });
+        if (!user || !bcrypt.compareSync(password, user.password)) {
+            return res.status(401).json({ message: 'Invalid credentials' });
         }
 
-        // Verify the provided password against the stored hashed password
-        const passwordMatch = await bcrypt.compare(password, user.password);
+        const token = jwt.sign({ id: user.id, companyEmail: user.companyEmail }, secretKey, { expiresIn: '1h' });
 
-        if (!passwordMatch) {
-            return res.status(401).json({ message: 'Invalid password' });
-        }
-
-        // At this point, the login is successful.
-        // You can generate and return a JSON Web Token (JWT) for authentication here.
-        // For simplicity, you can return a success message along with user details.
-        res.status(200).json({
-            message: 'Login successful',
-            user: {
-                _id: user._id,
-                name: user.name,
-                companyEmail: user.companyEmail,
-                // Include any other user details you want to return
-            },
-        });
+        res.json({ token });
     } catch (error) {
         console.error('Login error:', error);
         res.status(500).json({ message: 'Internal server error' });
     }
 });
+
 
 
 
