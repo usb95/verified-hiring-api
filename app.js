@@ -12,7 +12,6 @@ require("./db/conn");
 
 
 const Registration = require('./models/Registration');
-// const User = require('./models/User'); 
 const conn = require('./db/conn'); 
 
 
@@ -30,12 +29,12 @@ app.use(cors({
 }));
 
 
-// login endpoint
+// login 
 app.post('/login', async (req, res) => {
     const { companyEmail, password } = req.body;
 
     try {
-        // Check if the user with the provided companyEmail exists in the Registration model
+
         const user = await Registration.findOne({ companyEmail });
 
         if (!user) {
@@ -61,7 +60,7 @@ app.post('/login', async (req, res) => {
 
 
 
-// Registration endpoint
+// Registration 
 app.post('/register', async (req, res) => {
     const {
         salutation,
@@ -76,17 +75,14 @@ app.post('/register', async (req, res) => {
     } = req.body;
 
     try {
-        // Check if the user with the provided companyEmail exists in the Registration schema
+       
         const existingUser = await Registration.findOne({ companyEmail });
 
         if (existingUser) {
             return res.status(400).json({ message: 'User already exists' });
-        }
+        }        
 
-        // Hash the password before storing it (use bcrypt for secure hashing)
-        // const hashedPassword = await bcrypt.hash(password, 10);
-
-        // Create a new user in the Registration schema
+       
         const newUser = new Registration({
             salutation,
             name,
@@ -98,7 +94,10 @@ app.post('/register', async (req, res) => {
             country,
             mobileNumber,
         });
-   newUser.password = bcrypt.hashSync(password, 10);
+
+        
+       newUser.password = bcrypt.hashSync(password, 10);
+        
         await newUser.save();
 
         res.status(201).json({ message: 'User registered successfully' });
@@ -118,7 +117,7 @@ app.get('/protected', verifyToken, (req, res) => {
 
 
 
-// middleware to verify JWT token
+//JWT token
 function verifyToken(req, res, next) {
     const token = req.headers.authorization;
 
@@ -137,7 +136,7 @@ function verifyToken(req, res, next) {
 }
 
 
-// start the server
+// start server
 
 app.listen(port, () => {
     console.log(`Server is running on port ${port}`);
